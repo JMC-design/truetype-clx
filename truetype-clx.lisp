@@ -1,11 +1,9 @@
 (defpackage :truetype-clx
-  (:use :cl :zpb-ttf)
-  (:export *DPI-X*
-	   *DPI-Y*
-	   BASELINE-TO-BASELINE
+  (:use :cl)
+  (:export BASELINE-TO-BASELINE
 
 	   TEXT-BOUNDING-BOX
-           TEXT-LINE-BOUNDING-BOX
+	   TEXT-LINE-BOUNDING-BOX
 
 	   TEXT-WIDTH
 	   TEXT-HEIGHT
@@ -16,7 +14,7 @@
 	   TEXT-PIXARRAY
 	   TEXT-LINE-PIXARRAY
 	   
-           FONT-ASCENT
+	   FONT-ASCENT
 	   FONT-DESCENT
 	   FONT-LINE-GAP
 	   
@@ -25,8 +23,7 @@
 (in-package :truetype-clx)
 
 ;;;;Defaults to be set by user or system
-(defparameter *dpi-x* 144)
-(defparameter *dpi-y* 144)
+
 (defparameter *inch/pts* 72 "How many pts per inch. CSS/android is 96")
 
 ;;; Font metrics
@@ -37,17 +34,17 @@
 
 (defun font-ascent (font pt dpi)
   "Returns ascent of @var{font}."
-  (with-font-loader (loader font)
+  (zpb-ttf:with-font-loader (loader font)
     (ceiling (* (pt->pixels pt dpi (zpb-ttf:units/em loader))(zpb-ttf:ascender loader)))))
 
 (defun font-descent (font pt dpi)
   "Returns descent of @var{font}."
-  (with-font-loader (loader font)
+  (zpb-ttf:with-font-loader (loader font)
     (floor (* (pt->pixels pt dpi (zpb-ttf:units/em loader))(zpb-ttf:descender loader)))))
 
 (defun font-line-gap (font pt dpi)
   "Returns line gap of @var{font}."
-  (with-font-loader (loader font)
+  (zpb-ttf:with-font-loader (loader font)
     (ceiling (* (pt->pixels pt dpi (zpb-ttf:units/em loader)) (zpb-ttf:line-gap loader)))))
 
 ;;; baseline-to-baseline = ascent - descent + line gap
@@ -95,7 +92,7 @@
 
 (defun text-line-bounding-box (font pt-size string dpi-x dpi-y &key (underline nil) (overline nil))
   "Returns text line bounding box. Text line bounding box is bigger than text bounding box. It's height is ascent + descent, width is sum of advance widths minus sum of kernings."
-  (with-font-loader (loader font)
+  (zpb-ttf:with-font-loader (loader font)
     (let* ((units/em (zpb-ttf:units/em loader))
 	   (units->pixels-x (pt->pixels pt-size dpi-x units/em))
 	   (xmin (zpb-ttf:left-side-bearing (zpb-ttf:find-glyph (elt string 0) loader))
@@ -275,7 +272,7 @@ values: alpha mask byte array, x-origin, y-origin (subtracted from
 position before rendering), horizontal and vertical advances."
   (apply 
    'values
-   (with-font-loader (font-loader font)
+   (zpb-ttf:with-font-loader (font-loader font)
      (let* ((bbox (text-line-bounding-box font pt string dpi-x dpi-y))
 	    (units/em (zpb-ttf:units/em font-loader))
 	    (min-x (xmin bbox))
